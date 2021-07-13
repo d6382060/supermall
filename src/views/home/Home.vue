@@ -5,32 +5,25 @@
         <div>购物街</div>
       </template>
     </nav-bar>
-    <home-swiper :banners="banners" />
-    <home-recom :recommends="recommends" />
-    <feature />
-    <tab-contro class="tabContro" :titles="['流行', '新款', '精选']" />
-    <ul>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-      <li>8</li>
-      <li>9</li>
-      <li>10</li>
-      <li>11</li>
-      <li>12</li>
-      <li>13</li>
-      <li>14</li>
-      <li>15</li>
-      <li>16</li>
-      <li>17</li>
-      <li>18</li>
-      <li>19</li>
-      <li>20</li>
-    </ul>
+    <scroll
+      class="content"
+      ref="scroll"
+      :probe-type="3"
+      @scroll="contentScroll"
+      :pull-up-load="true"
+      @pullingUp="loadMore"
+    >
+      <home-swiper :banners="banners" />
+      <home-recom :recommends="recommends" />
+      <feature />
+      <tab-contro
+        class="tabContro"
+        :titles="['流行', '新款', '精选']"
+        @tabcli="tabcli"
+      />
+      <goods-list :goods="showGoods" />
+    </scroll>
+    <back-top @click.native="backClick" v-show="isShowBackTop" />
   </div>
 </template>
 
@@ -44,8 +37,14 @@ import feature from './childComps/feature.vue'
 import NavBar from '../../components/common/navbar/NavBar.vue'
 import TabContro from '@/components/content/tabContro/TabContro.vue'
 // import TabContro from '../../components/content/tabContro/TabContro.vue'
+import GoodsList from '../../components/content/goods/GoodsList.vue'
+import Scroll from '../../components/common/scroll/Scroll.vue'
+import BackTop from '../../components/content/backTop/BackTop.vue'
+
 
 import { getHomeMultidata, getHomeGoods } from '../../network/home'
+
+
 
 
 
@@ -59,37 +58,95 @@ export default {
     HomeRecom,
     feature,
     TabContro,
-    TabContro
+    GoodsList,
+    TabContro,
+    Scroll,
+    BackTop
   },
   data () {
     return {
       banners: [],
       recommends: [],
       goods: {
-        'pop': { page: 1, list: [] }, // 流行的数据
-        'news': { page: 1, list: [] }, // 新款的数据
-        'sell': { page: 1, list: [] }  // 精选数据
-      }
+        'pop': { page: 0, list: [] }, // 流行的数据
+        'new': { page: 0, list: [] }, // 新款的数据
+        'sell': { page: 0, list: [] }  // 精选数据
+      },
+      currentType: 'pop',
+      isShowBackTop: false
+    }
+  },
+  computed: {
+    showGoods () {
+      return this.goods[this.currentType].list
     }
   },
   created () {  // 生命周期函数 ，在当前组件加载的时候
     // 1.请求多个数据
-    getHomeMultidata().then(res => {
-      this.banners = res.data.banner.list;
-      this.recommends = res.data.recommend.list;
-      // console.log(res);
-    })
+    this.getHomeMultidata()
     // 2.请求商品数据
-    getHomeGoods('pop', 1).then(res => {
-      console.log(res);
-    })
+    this.getHomeGoods('pop')
+    this.getHomeGoods('new')
+    this.getHomeGoods('sell')
+  },
+  methods: {
+    /**
+    事件监听的相关方法
+     */
+    tabcli (index) {
+      // console.log(index);
+      switch (index) {
+        case 0:
+          this.currentType = 'pop'
+          break
+        case 1:
+          this.currentType = 'new'
+          break
+        case 2:
+          this.currentType = 'sell'
+          break
+
+      }
+    },
+    backClick () {
+      this.$refs.scroll.scrool(0, 0, 500)
+    },
+    contentScroll (position) {
+      // console.log(position);
+      this.isShowBackTop = -position.y > 1000
+    },
+    loadMore () {
+      this.getHomeGoods(this.currentType)
+      this.$refs.scroll.scroll.refresh() // 重新计算可滚动高度
+    },
+    /**
+     网络请求相关的方法    
+     */
+    getHomeMultidata () {
+      getHomeMultidata().then(res => {
+        this.banners = res.data.banner.list;
+        this.recommends = res.data.recommend.list;
+        // console.log(res);
+      })
+    },
+    getHomeGoods (type) {
+      const page = this.goods[type].page + 1
+      getHomeGoods(type, page).then(res => {
+        // console.log(res);
+        this.goods[type].list.push(...res.data.list)
+        this.goods[type].page += 1
+        this.$refs.scroll.finishPullUp()
+      })
+    }
   }
 }
 </script>
 
 <style scoped>
 #home {
+  /* padding-top: 44px; */
   padding-top: 44px;
+  height: 100vh;
 }
 .home-nav {
   background-color: var(--color-tint);
@@ -103,5 +160,18 @@ export default {
 .tabContro {
   position: sticky;
   top: 44px;
+  z-index: 9;
+}
+.content {
+  /* height: calc(100vh - 98px); */
+  /* height: calc(100vh - 49px);
+  /* margin-top: 44px; */
+
+  overflow: hidden;
+  position: absolute;
+  top: 44px;
+  bottom: 49px;
+  left: 0;
+  right: 0;
 }
 </style>

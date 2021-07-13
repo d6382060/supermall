@@ -1,8 +1,9 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, VueRouter } from 'vue-router'
 const Home = () => import('../views/home/Home')
 const Category = () => import('../views/category/Category')
 const Cart = () => import('../views/cart/Cart')
 const profile = () => import('../views/profile/Profile')
+
 const routes = [
   {
     path: "",
@@ -25,6 +26,7 @@ const routes = [
     component: profile
   }
 ]
+
 
 const router = createRouter({
   history: createWebHashHistory(),

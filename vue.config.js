@@ -11,4 +11,5 @@ module.exports = {
       .set('components', resolve('./src/components'))
       .set('views', resolve('src/views'))
   }
+
 }
