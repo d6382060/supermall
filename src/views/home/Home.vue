@@ -5,6 +5,13 @@
         <div>购物街</div>
       </template>
     </nav-bar>
+    <tab-contro
+      :titles="['流行', '新款', '精选']"
+      @tabcli="tabcli"
+      ref="tabContorl1"
+      class="tab-control"
+      v-show="isTbaFixed"
+    />
     <scroll
       class="content"
       ref="scroll"
@@ -13,13 +20,13 @@
       :pull-up-load="true"
       @pullingUp="loadMore"
     >
-      <home-swiper :banners="banners" />
+      <home-swiper :banners="banners" @imagLoad="imagLoad" />
       <home-recom :recommends="recommends" />
       <feature />
       <tab-contro
-        class="tabContro"
         :titles="['流行', '新款', '精选']"
         @tabcli="tabcli"
+        ref="tabContorl2"
       />
       <goods-list :goods="showGoods" />
     </scroll>
@@ -61,7 +68,7 @@ export default {
     GoodsList,
     TabContro,
     Scroll,
-    BackTop
+    BackTop,
   },
   data () {
     return {
@@ -73,7 +80,9 @@ export default {
         'sell': { page: 0, list: [] }  // 精选数据
       },
       currentType: 'pop',
-      isShowBackTop: false
+      isShowBackTop: false,
+      tabOffsetTop: 0,
+      isTbaFixed: false
     }
   },
   computed: {
@@ -88,6 +97,8 @@ export default {
     this.getHomeGoods('pop')
     this.getHomeGoods('new')
     this.getHomeGoods('sell')
+
+
   },
   methods: {
     /**
@@ -107,18 +118,30 @@ export default {
           break
 
       }
+      this.$refs.tabContorl1.currentIndex = index
+      this.$refs.tabContorl2.currentIndex = index
     },
     backClick () {
       this.$refs.scroll.scrool(0, 0, 500)
     },
     contentScroll (position) {
       // console.log(position);
+      // 1.判断返回顶部按钮是否显示
       this.isShowBackTop = -position.y > 1000
+      // 2.决定tabControl是否吸顶(position：fixed)
+      this.isTbaFixed = -position.y > this.tabOffsetTop
     },
     loadMore () {
       this.getHomeGoods(this.currentType)
-      this.$refs.scroll.scroll.refresh() // 重新计算可滚动高度
+      // this.$refs.scroll.scroll.refresh() // 重新计算可滚动高度
     },
+    imagLoad () {
+      // 1. 赋值
+      // 所有的组件都有一个属性$el：用于获取组件中的元素
+      // this.tabOffsetTop = this.$refs.tabContorl
+      this.tabOffsetTop = this.$refs.tabContorl2.$el.offsetTop
+    },
+
     /**
      网络请求相关的方法    
      */
@@ -135,32 +158,25 @@ export default {
         // console.log(res);
         this.goods[type].list.push(...res.data.list)
         this.goods[type].page += 1
+
+        // 完成下拉加载更多
         this.$refs.scroll.finishPullUp()
       })
     }
-  }
+  },
 }
 </script>
 
 <style scoped>
 #home {
   /* padding-top: 44px; */
-  padding-top: 44px;
+  /* padding-top: 44px; */
   height: 100vh;
+  position: relative;
 }
 .home-nav {
   background-color: var(--color-tint);
   color: #fff;
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  z-index: 5;
-}
-.tabContro {
-  position: sticky;
-  top: 44px;
-  z-index: 9;
 }
 .content {
   /* height: calc(100vh - 98px); */
@@ -173,5 +189,9 @@ export default {
   bottom: 49px;
   left: 0;
   right: 0;
+}
+.tab-control {
+  position: relative;
+  z-index: 9;
 }
 </style>

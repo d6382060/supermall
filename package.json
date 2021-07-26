@@ -9,10 +9,14 @@
   "dependencies": {
     "@better-scroll/core": "^2.4.1",
     "@better-scroll/observe-dom": "^2.4.1",
+    "@better-scroll/observe-image": "^2.4.1",
     "@better-scroll/pull-up": "^2.4.1",
     "axios": "^0.21.1",
     "core-js": "^3.15.2",
+    "mitt": "^3.0.0",
+    "tiny-emitter": "^2.1.0",
     "vue": "^3.1.4",
+    "vue-bus": "^1.2.1",
     "vue-router": "^4.0.10",
     "vuex": "^4.0.2"
   },

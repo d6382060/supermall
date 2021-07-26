@@ -11,7 +11,8 @@
 import BScroll from '@better-scroll/core'
 import ObserveDom from '@better-scroll/observe-dom'
 import Pullup from '@better-scroll/pull-up'
-BScroll.use(ObserveDom).use(Pullup)
+import observeImage from '@better-scroll/observe-image'
+BScroll.use(ObserveDom).use(Pullup).use(observeImage)
 export default {
   name: "Scroll",
   props: {
@@ -32,8 +33,9 @@ export default {
   mounted () {
     // 1、创建BSscroll 对象
     this.scroll = new BScroll(this.$refs.wrapper, {
-      observeDOM: true,
+      observeDOM: true, // 会动态的探测content 里面的高度 并在高度改变时自动触发refresh方法
       // probeType: 3,
+      observeImage: true, // 开启检测图片加载是否完成的插件，然后在100毫秒内重新计算可滚动高度
       probeType: this.probeType,
       pullUpLoad: this.pullUpLoad,
       click: true,
@@ -52,10 +54,16 @@ export default {
   },
   methods: {
     scrool (x, y, time = 300) {
-      this.scroll.scrollTo(x, y, time)
+      this.scroll && this.scroll.scrollTo(x, y, time)
     },
     finishPullUp () {
-      this.scroll.finishPullUp()
+      this.scroll && this.scroll.finishPullUp()
+    },
+    scrollToElement (el, time, offsetX, offsetY, easing) {
+      this.scoll && this.scrool.scrollToElement(el, time, offsetX, offsetY, easing)
+    },
+    refresh () {
+      this.scroll && this.scroll.refresh()
     }
   }
   // mounted () {

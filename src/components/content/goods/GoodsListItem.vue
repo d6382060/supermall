@@ -1,6 +1,6 @@
 <template>
-  <div class="goods-item">
-    <img :src="goodsItem.show.img" alt="" />
+  <div class="goods-item" @click="itemClick">
+    <img :src="showImage" alt="" @load="imageLoad" />
     <div class="goods-info">
       <p>{{ goodsItem.title }}</p>
       <span class="price">{{ goodsItem.price }}</span>
@@ -10,8 +10,10 @@
 </template>
 
 <script>
+import bus from '../../../eventBus';
 export default {
   name: 'GoodsListItem',
+
   props: {
     goodsItem: {
       type: Object,
@@ -19,6 +21,23 @@ export default {
         return {}
       }
     }
+  },
+  computed: {
+    showImage () {
+      return this.goodsItem.image || this.goodsItem.show.img
+    }
+  },
+  methods: {
+    itemClick () {
+      this.$router.push('/Detail/' + this.goodsItem.iid)
+    },
+    imageLoad () {
+      bus.$emit('imageLoad');
+      // console.log(bus.$emit);
+      //this.$bus.eventBus.$emit('imageLoad')
+      // console.log(eventBus.$emit)
+    }
+
   }
 }
 </script>
